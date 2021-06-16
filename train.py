@@ -10,7 +10,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import utils
 import transforms as T
 import bio_rectangular_dataset as bs
-import confusion_matrix as cm
+#import confusion_matrix as cm
 from engine import train_one_epoch, evaluate
 
 import time
