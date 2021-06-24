@@ -22,12 +22,15 @@ import cv2 as cv
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 torch.cuda.empty_cache()
 
-def get_transform(train):
+def get_transform(train, tr):
     transforms = []
     if train:
-        transforms.append(T.RandomHorizontalFlip(0.5))
-        transforms.append(T.RandomVerticalFlip(0.5))
-        transforms.append(T.RandomRotation())
+    	if '1' in tr:
+            transforms.append(T.RandomHorizontalFlip(0.5))
+        if '2' in tr:
+            transforms.append(T.RandomVerticalFlip(0.5))
+        if '3' in tr:
+            transforms.append(T.RandomRotation())
     transforms.append(T.ToTensor())
     return T.Compose(transforms)
 
@@ -41,10 +44,10 @@ def get_object_detection_model(num_classes):
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
     return model
 
-def train(csv, lb_map, num_epochs=10, batch=1):
+def train(csv, lb_map, tr, num_epochs=10, batch=1):
     # use our dataset and defined transformations
-    dataset = bs.bio_data_rectangular('train', csv, lb_map, get_transform(train=True))
-    dataset_test = bs.bio_data_rectangular('test', csv, lb_map, get_transform(train=False))
+    dataset = bs.bio_data_rectangular('train', csv, lb_map, get_transform(train=True), tr)
+    dataset_test = bs.bio_data_rectangular('test', csv, lb_map, get_transform(train=False), tr)
 
 
     # define training and validation data loaders
@@ -98,9 +101,10 @@ if __name__ =='__main__':
     parser.add_argument('lbmap', type=str, help='Path to labelmap txt file.')
     parser.add_argument('-ne', type=int, help='Number of epochs.', default=10)
     parser.add_argument('-bs', type=int, help='Batch size.', default=1)
+    parser.add_argument('-tr', type=str, help='List of transformations. 1-Random Horizontal Flip, 1-Random Vertical Flip, 1-Random Rotation.', default='123')
     parser.add_argument('-out', type=str, help='Output model name.', default=os.path.join(os.getcwd(), 'model'))
     args = parser.parse_args()
 
-    model = train(args.csv, args.lbmap, args.ne, args.bs)
+    model = train(args.csv, args.lbmap, tr, args.ne, args.bs)
     #cm.bulid_matrix(model, 'test', args.csv, args.lbmap)
     torch.save(model.state_dict(), args.out)

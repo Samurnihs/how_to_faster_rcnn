@@ -45,7 +45,7 @@ def get_info(name, data, label_file):
 
 def inference(path, model, device):
     
-    image = cv.imread(path)
+    image = cv.cvtColor(cv.imread(path), cv.COLOR_BGR2RGB)
     image_tensor = torchvision.transforms.functional.to_tensor(image)
     
     with torch.no_grad():
