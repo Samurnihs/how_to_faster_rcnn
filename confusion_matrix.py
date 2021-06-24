@@ -170,6 +170,7 @@ def bulid_matrix(model_p, image_data, csv_name, lbmap): #num_classes):
         text = plt.text(j, i, confusion_matrix[i, j],
                        ha="center", va="center", color="k")
 
+    plt.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
     plt.imshow(confusion_matrix, cmap='BuGn',interpolation="nearest")
     plt.tight_layout()
     plt.savefig('confusion_matrix.png', dpi=300)

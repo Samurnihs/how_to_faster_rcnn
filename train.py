@@ -25,7 +25,7 @@ torch.cuda.empty_cache()
 def get_transform(train, tr):
     transforms = []
     if train:
-    	if '1' in tr:
+        if '1' in tr:
             transforms.append(T.RandomHorizontalFlip(0.5))
         if '2' in tr:
             transforms.append(T.RandomVerticalFlip(0.5))
@@ -46,8 +46,8 @@ def get_object_detection_model(num_classes):
 
 def train(csv, lb_map, tr, num_epochs=10, batch=1):
     # use our dataset and defined transformations
-    dataset = bs.bio_data_rectangular('train', csv, lb_map, get_transform(train=True), tr)
-    dataset_test = bs.bio_data_rectangular('test', csv, lb_map, get_transform(train=False), tr)
+    dataset = bs.bio_data_rectangular('train', csv, lb_map, get_transform(True, tr))
+    dataset_test = bs.bio_data_rectangular('test', csv, lb_map, get_transform(False, tr))
 
 
     # define training and validation data loaders
@@ -105,6 +105,6 @@ if __name__ =='__main__':
     parser.add_argument('-out', type=str, help='Output model name.', default=os.path.join(os.getcwd(), 'model'))
     args = parser.parse_args()
 
-    model = train(args.csv, args.lbmap, tr, args.ne, args.bs)
+    model = train(args.csv, args.lbmap, args.tr, args.ne, args.bs)
     #cm.bulid_matrix(model, 'test', args.csv, args.lbmap)
     torch.save(model.state_dict(), args.out)

@@ -33,7 +33,9 @@ class bio_data_rectangular(torch.utils.data.Dataset):
     # функция, позволяющая получить изображение из набора и информацию о нём
     def __getitem__(self, idx):
         img_path = os.path.join(self.root, self.imgs[idx])
-        img = Image.fromarray(np.uint8(np.array(cv.cvtColor(cv.imread(img_path), cv.COLOR_BGR2RGB))))
+        img = cv.imread(img_path)
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        img = Image.fromarray(img)
         # получение всей информации о выбранном изображении из аннотаций
         img_info = self.info.loc[self.info['filename'] == self.imgs[idx]].reset_index(drop=True)
         # число объектов
