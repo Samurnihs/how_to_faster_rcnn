@@ -57,7 +57,7 @@ def analyze(path, model, labeldict, device, fold, threshold=0.7, colors=[]):
     prediction[0]['scores'] = np.array(prediction[0]['scores'].cpu())
 
     df = pd.DataFrame({'filename': [path]*len(prediction[0]['labels']), 'class': list(map(lambda x: labeldict[x], prediction[0]['labels'])), \
-                       'xmin': prediction[0]['boxes'][:, 0], 'ymin': prediction[0]['boxes'][:, 1], 'xmax': prediction[0]['boxes'][:, 2], 'ymax': prediction[0]['boxes'][:, 3], \
+                       'xmin': prediction[0]['boxes'][:, 0].astype(int), 'ymin': prediction[0]['boxes'][:, 1].astype(int), 'xmax': prediction[0]['boxes'][:, 2].astype(int), 'ymax': prediction[0]['boxes'][:, 3].astype(int), \
                        'score': prediction[0]['scores']})
     df = df[df['score'] >= threshold]
 
@@ -108,6 +108,21 @@ def inference(model_name, labelmap, files, imsave_path):
     print("--- %s seconds ---" % (time.time() - start_time))
     return df
 
+
+def count_stats(df):
+    classes = sorted(df['class'].unique())
+    dout = pd.DataFrame()
+    for file in df['filename'].unique():
+        #print(file)
+        dic = dict(zip(classes, [0]*len(classes)))
+        dic['filename'] = file
+        vals = df[df['filename'] == file]['class'].value_counts()
+        for ind in vals.keys():
+            dic[ind] = vals[ind]
+        dout = pd.concat([dout, pd.DataFrame(dic, index=[0])]) 
+        #print(dout)
+    return dout.set_index('filename')
+
 if __name__ =='__main__':
     parser = argparse.ArgumentParser(description='Script for performing inference.')
     parser.add_argument('input_images', type=str, nargs='+', help='List of images for analyzing.')
@@ -117,4 +132,12 @@ if __name__ =='__main__':
     parser.add_argument('-io', type=str, help='Name of directory for result images. Will be created automatically. Existing folder will be deleted and created again.', default='image_results')
     args = parser.parse_args()
 
-    inference(args.model, args.labelmap, args.input_images, args.io).to_excel(args.o, index=None)
+    df = inference(args.model, args.labelmap, args.input_images, args.io)
+    df_c = count_stats(df)
+
+
+    writer = pd.ExcelWriter(args.o)   
+    df_c.to_excel(writer, sheet_name='Result') 
+    df.to_excel(writer, sheet_name='Details') 
+    writer.save()
+
